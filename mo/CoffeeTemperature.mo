@@ -921,7 +921,93 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         __OpenModelica_commandLineOptions = "",
         experiment(StartTime = 0, StopTime = 100, Tolerance = 1e-06, Interval = 0.1));
     end tankTest1;
+    
+    
+    model Nu1
+  /* Calculate Nu number of vertical plate*/
+    import Modelica.Media;
+    package medium = CoffeeTemperature.Media.IdealGases_Light.SimpleAir;
+    //package medium = Modelica.Media.Air.DryAirNasa;
+    medium.ThermodynamicState state;
+    constant Real g = 9.81;
+    constant Real p = 101325;
+    parameter Real T = 45+273.15;
+    //parameter Real T = 20+273.15;
+    Real k;
+    Real Cp;
+    Real d;
+    
+    Real Pr;
+    //Real nu "kinematic viscosity";
+    Real mu "dynamic viscosity";
+    Real beta;
+    Real Gr;
+    Real C;
+    Real m;
+    Real Nu;
+    Real h;
+    parameter Real dT = 50;
+    parameter Real L = 4;
+  equation
+    
+    // material property
+    state = medium.setState_pT(p, T);
+    d = medium.density(state);
+    k = medium.thermalConductivity(state);
+    Cp = medium.specificHeatCapacityCp(state);
+    mu = medium.dynamicViscosity(state);
+    beta = medium.density_derT_p(state) * (-1 / d);
+    
+    if Pr*Gr >= 10^5 and Pr*Gr <= 10^8 then
+      C=0.56;
+      m=0.25;
+    elseif Pr*Gr > 10^8 then
+      C=0.10;
+      m=1/3;  
+    else
+      C=0;
+      m=0;
+      assert(Pr*Gr>10^5, "Pr*Gr<10^5 Can't adapt this model");
+    end if;
+    //assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
+    
+    algorithm
+    Pr :=  mu * Cp / k;
+    Gr := g * (d ^ 2) * beta * dT * (L ^ 3) / (mu ^ 2);
+    Nu:=C*(Pr*Gr)^m;
+    h:=k/L*Nu;
+    
+    
+  //dT=Ts-Tbulk;
+  end Nu1;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+    
+    
   end UnitTest;
+
 
   package CoffeeThermal
     model NaturalConvection "Lumped thermal element for heat convection (Q_flow = Gc*dT)"
@@ -1269,9 +1355,7 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
       end AirTest5;
 
       model AirTest6
-        /*
-                           Gr作成
-                          */
+      
         import Modelica.Media;
         //package medium = IdealGases_Light.SimpleAir;
         package medium = Modelica.Media.Air.DryAirNasa;
@@ -1287,6 +1371,10 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         Real dynamicViscosity;
         Real beta;
         Real Gr;
+        Real C;
+        Real m;
+        Real Nu;
+        Real h;
         parameter Real dT = 10;
         parameter Real L = 1;
       equation
@@ -1300,17 +1388,32 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         Pr = mu * Cp / k;
         Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
         if Pr*Gr >= 10^5 and Pr*Gr <= 10^8 then
-          Nu=1;
+          C=0.56;
+          m=0.25;
         elseif Pr*Gr > 10^8 then
-        
+          C=0.12;
+          m=0.33;  
         else
-          assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
+          C=0;
+          m=0;
+          assert(Pr*Gr>10^5, "Pr*Gr<10^5 Can't adapt this model");
         end if;
-        
+        Nu=C*(Pr*Gr)^m;
+        h=k/L*Nu;
         
         assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
 //dT=Ts-Tbulk;
       end AirTest6;
+
+
+
+
+
+
+
+
+
+
 
 
 
