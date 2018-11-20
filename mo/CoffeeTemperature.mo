@@ -547,27 +547,27 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
       Modelica.Fluid.Vessels.OpenTank cup(redeclare package Medium = Medium, T_start = Tamb, crossArea = R ^ 2 * pi, height = L, level_start = 0, nPorts = 1, portsData = {Modelica.Fluid.Vessels.BaseClasses.VesselPortsData(diameter = R, height = 70 / 1000)}, use_HeatTransfer = true, use_portsData = true) annotation(
         Placement(visible = true, transformation(origin = {50, -30}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
       inner Modelica.Fluid.System system annotation(
-        Placement(visible = true, transformation(origin = {-164, 184}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {100, 176}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Thermal.HeatTransfer.Components.Convection convection1 annotation(
-        Placement(visible = true, transformation(origin = {-50, 2}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-52, 30}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
       Modelica.Blocks.Sources.Constant const(k = 100 * R ^ 2 * pi) annotation(
-        Placement(visible = true, transformation(origin = {-52, 42}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-54, 70}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Thermal.HeatTransfer.Components.ThermalConductor thermalConductor1(G = 2 * pi * k * L / log((R + cup_t / 2) / R)) annotation(
-        Placement(visible = true, transformation(origin = {-50, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-42, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Thermal.HeatTransfer.Components.Convection convection2 annotation(
         Placement(visible = true, transformation(origin = {-142, -82}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
       Modelica.Blocks.Sources.Constant const1(k = h * 2 * (R + cup_t) * pi * L) annotation(
         Placement(visible = true, transformation(origin = {-142, -44}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Thermal.HeatTransfer.Sources.FixedTemperature fixedTemperature2(T = Tamb) annotation(
-        Placement(visible = true, transformation(origin = {-188, -16}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-186, -8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Thermal.HeatTransfer.Components.ThermalConductor thermalConductor2(G = 2 * pi * k * L / log(R / (R - cup_t / 2))) annotation(
-        Placement(visible = true, transformation(origin = {-106, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-98, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor1(C = cp * V * rho, T(fixed = true, start = Tamb)) annotation(
-        Placement(visible = true, transformation(origin = {-92, -52}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-72, -48}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Thermal.HeatTransfer.Components.Convection convection3 annotation(
-        Placement(visible = true, transformation(origin = {-144, -126}, extent = {{10, 10}, {-10, -10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-142, -126}, extent = {{10, 10}, {-10, -10}}, rotation = 0)));
       Modelica.Blocks.Sources.Constant const2(k = h * (R + cup_t) ^ 2 * pi) annotation(
-        Placement(visible = true, transformation(origin = {-146, -164}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+        Placement(visible = true, transformation(origin = {-144, -164}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Fluid.Vessels.OpenTank yakan(redeclare package Medium = Medium, T_start = 273.15 + 98, crossArea = R ^ 2 * pi, height = L, level_start = level_start, nPorts = 1, portsData = {Modelica.Fluid.Vessels.BaseClasses.VesselPortsData(diameter = 5 / 1000)}, use_HeatTransfer = true, use_portsData = true) annotation(
         Placement(visible = true, transformation(origin = {50, 162}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
       Modelica.Fluid.Pipes.StaticPipe pipe(redeclare package Medium = Medium, diameter = 15 / 1000, height_ab = -50 / 1000, length = 50 / 1000) annotation(
@@ -576,7 +576,7 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         Placement(visible = true, transformation(origin = {50, 48}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
       Modelica.Blocks.Sources.Ramp ramp1(duration = 1, offset = 1e-6, startTime = 0) annotation(
         Placement(visible = true, transformation(origin = {166, 50}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
-      Modelica.Blocks.Sources.CombiTimeTable combiTimeTable1(columns = 2:2, fileName = "C:/Work/2018/Coffee/Experiment/WaterTemp_1.txt", tableName = "Tab1", tableOnFile = true) annotation(
+      Modelica.Blocks.Sources.CombiTimeTable combiTimeTable1(columns = 2:2, fileName = "C:/Work/2018/Coffee/CoffeeTemperature/Experiment/WaterTemp_1.txt", tableName = "Tab1", tableOnFile = true) annotation(
         Placement(visible = true, transformation(origin = {176, -180}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
       Modelica.Blocks.Sources.Constant const3(k = 1) annotation(
         Placement(visible = true, transformation(origin = {168, 92}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
@@ -591,40 +591,40 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
       Modelica.Blocks.Sources.TimeTable timeTable1(table = [0, 0; 5, 0; 15, 1; 20, 0; 25, 0]) annotation(
         Placement(visible = true, transformation(origin = {90, 48}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
     equation
+      connect(cup.heatPort, convection1.solid) annotation(
+        Line(points = {{30, -30}, {0, -30}, {0, 30}, {-42, 30}, {-42, 30}}, color = {191, 0, 0}));
+      connect(const.y, convection1.Gc) annotation(
+        Line(points = {{-43, 70}, {-51, 70}, {-51, 40}, {-53, 40}}, color = {0, 0, 127}));
+      connect(fixedTemperature2.port, convection1.fluid) annotation(
+        Line(points = {{-176, -8}, {-119, -8}, {-119, 30}, {-62, 30}}, color = {191, 0, 0}));
+      connect(heatCapacitor1.port, thermalConductor1.port_a) annotation(
+        Line(points = {{-72, -58}, {-72, -82}, {-52, -82}}, color = {191, 0, 0}));
+      connect(thermalConductor2.port_b, heatCapacitor1.port) annotation(
+        Line(points = {{-88, -82}, {-72, -82}, {-72, -58}, {-72, -58}}, color = {191, 0, 0}));
+      connect(thermalConductor2.port_a, convection2.solid) annotation(
+        Line(points = {{-108, -82}, {-132, -82}}, color = {191, 0, 0}));
+      connect(thermalConductor2.port_a, convection3.solid) annotation(
+        Line(points = {{-108, -82}, {-122, -82}, {-122, -126}, {-132, -126}}, color = {191, 0, 0}));
+      connect(convection4.solid, thermalConductor1.port_b) annotation(
+        Line(points = {{-12, -84}, {-32, -84}, {-32, -82}}, color = {191, 0, 0}));
+      connect(const2.y, convection3.Gc) annotation(
+        Line(points = {{-133, -164}, {-143, -164}, {-143, -136}, {-143, -136}}, color = {0, 0, 127}));
+      connect(convection3.fluid, fixedTemperature2.port) annotation(
+        Line(points = {{-152, -126}, {-176, -126}, {-176, -8}}, color = {191, 0, 0}));
+  connect(convection2.fluid, fixedTemperature2.port) annotation(
+        Line(points = {{-152, -82}, {-176, -82}, {-176, -8}}, color = {191, 0, 0}));
+  connect(convection5.solid, fixedTemperature2.port) annotation(
+        Line(points = {{-18, 166}, {-176, 166}, {-176, -8}}, color = {191, 0, 0}));
       connect(timeTable1.y, valveIncompressible1.opening) annotation(
         Line(points = {{102, 48}, {60, 48}, {60, 48}, {58, 48}}, color = {0, 0, 127}));
-      connect(convection5.solid, fixedTemperature2.port) annotation(
-        Line(points = {{-18, 166}, {-178, 166}, {-178, -16}, {-178, -16}}, color = {191, 0, 0}));
       connect(const5.y, convection5.Gc) annotation(
         Line(points = {{-8, 142}, {-8, 142}, {-8, 156}, {-8, 156}}, color = {0, 0, 127}));
       connect(convection5.fluid, yakan.heatPort) annotation(
         Line(points = {{2, 166}, {28, 166}, {28, 162}, {30, 162}}, color = {191, 0, 0}));
       connect(convection4.fluid, cup.heatPort) annotation(
         Line(points = {{8, -84}, {28, -84}, {28, -30}, {30, -30}}, color = {191, 0, 0}));
-      connect(convection4.solid, thermalConductor1.port_b) annotation(
-        Line(points = {{-12, -84}, {-40, -84}, {-40, -82}, {-40, -82}}, color = {191, 0, 0}));
       connect(const4.y, convection4.Gc) annotation(
         Line(points = {{-2, -108}, {-2, -94}}, color = {0, 0, 127}));
-      connect(heatCapacitor1.port, thermalConductor1.port_a) annotation(
-        Line(points = {{-92, -62}, {-92, -82}, {-60, -82}}, color = {191, 0, 0}));
-      connect(convection1.solid, cup.heatPort) annotation(
-        Line(points = {{-40, 2}, {-31, 2}, {-31, -36}, {16.5, -36}, {16.5, -30}, {30, -30}}, color = {191, 0, 0}));
-      connect(const.y, convection1.Gc) annotation(
-        Line(points = {{-40, 42}, {-50, 42}, {-50, 12}, {-50, 12}}, color = {0, 0, 127}));
-      connect(const2.y, convection3.Gc) annotation(
-        Line(points = {{-135, -164}, {-145, -164}, {-145, -136}, {-145, -136}}, color = {0, 0, 127}));
-      connect(thermalConductor2.port_a, convection3.solid) annotation(
-        Line(points = {{-116, -82}, {-125, -82}, {-125, -82}, {-124, -82}, {-124, -126}, {-134, -126}, {-134, -126}, {-134, -126}, {-134, -126}}, color = {191, 0, 0}));
-      connect(convection3.fluid, fixedTemperature2.port) annotation(
-        Line(points = {{-154, -126}, {-166, -126}, {-166, -126}, {-178, -126}, {-178, -16}, {-178, -16}}, color = {191, 0, 0}));
-      connect(thermalConductor2.port_b, heatCapacitor1.port) annotation(
-        Line(points = {{-96, -82}, {-99, -82}, {-99, -82}, {-92, -82}, {-92, -62}, {-94, -62}, {-94, -62}, {-92, -62}}, color = {191, 0, 0}));
-      connect(thermalConductor2.port_a, convection2.solid) annotation(
-        Line(points = {{-116, -82}, {-132, -82}}, color = {191, 0, 0}));
-      connect(fixedTemperature2.port, convection1.fluid) annotation(
-        Line(points = {{-178, -16}, {-179, -16}, {-179, -16}, {-176, -16}, {-176, 2}, {-60, 2}, {-60, 2}, {-60, 2}, {-60, 2}}, color = {191, 0, 0}));
-      connect(convection2.fluid, fixedTemperature2.port) annotation(
-        Line(points = {{-152, -82}, {-167, -82}, {-167, -82}, {-178, -82}, {-178, -49}, {-178, -49}, {-178, -16}}, color = {191, 0, 0}));
       connect(const1.y, convection2.Gc) annotation(
         Line(points = {{-131, -44}, {-133.75, -44}, {-133.75, -44}, {-132.5, -44}, {-132.5, -44}, {-136, -44}, {-136, -42}, {-145, -42}, {-145, -70}, {-143, -70}, {-143, -72}, {-143, -72}, {-143, -72}, {-148, -72}, {-148, -72}, {-143, -72}}, color = {0, 0, 127}));
       connect(valveIncompressible1.port_b, cup.ports[1]) annotation(
@@ -641,7 +641,7 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
 </p>
 </html>"),
         uses(Modelica(version = "3.2.2")),
-        Diagram(coordinateSystem(extent = {{-200, -200}, {200, 200}})),
+        Diagram(coordinateSystem(extent = {{-300, -300}, {300, 300}})),
         Icon(coordinateSystem(extent = {{-200, -200}, {200, 200}})),
         version = "",
         __OpenModelica_commandLineOptions = "",
@@ -949,8 +949,7 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
     parameter Real dT = 50;
     parameter Real L = 4;
   equation
-    
-    // material property
+// material property
     state = medium.setState_pT(p, T);
     d = medium.density(state);
     k = medium.thermalConductivity(state);
@@ -969,16 +968,13 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
       m=0;
       assert(Pr*Gr>10^5, "Pr*Gr<10^5 Can't adapt this model");
     end if;
-    //assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
-    
+//assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
     algorithm
     Pr :=  mu * Cp / k;
     Gr := g * (d ^ 2) * beta * dT * (L ^ 3) / (mu ^ 2);
     Nu:=C*(Pr*Gr)^m;
     h:=k/L*Nu;
-    
-    
-  //dT=Ts-Tbulk;
+//dT=Ts-Tbulk;
   end Nu1;
 
 
@@ -1351,7 +1347,7 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         beta = medium.density_derT_p(state)*(-1/d);
         Pr = mu * Cp / k;
         Gr=(g*d^2*beta*dT*L^3)/(mu^2);
-        //dT=Ts-Tbulk;
+//dT=Ts-Tbulk;
       end AirTest5;
 
       model AirTest6
