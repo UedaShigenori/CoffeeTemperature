@@ -910,7 +910,7 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
       parameter Real rho = 2200 "陶器密度　https://www.hakko.co.jp/qa/qakit/html/h01010.htm";
       parameter Real k = 1.3 "熱伝導率";
       parameter Real cp = 1050;
-      parameter Real h = 90 "カップ-外気の熱伝達率";
+      parameter Real h = 10 "カップ-外気の熱伝達率";
       //liquid parameter
       parameter Real h_l = 1000 "カップ内固液熱伝導率";
       //dripper parameter
@@ -1005,7 +1005,6 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         __OpenModelica_commandLineOptions = "",
         experiment(StartTime = 0, StopTime = 2400, Tolerance = 1e-06, Interval = 2.4));
     end CoffeeTest10;
-
 
 
 
