@@ -904,13 +904,13 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
       parameter Real cup_t = 4 / 1000 "thichness of cup";
       parameter Real cup_t_bottom = 4 / 1000 "thichness of cup";
       parameter Real V = ((R + cup_t) ^ 2 - R ^ 2) * pi * L "volume of cup";
-      parameter Real Sin = 2 * R * pi * L "volume of cup";
-      parameter Real Sout = 2 * (R + cup_t) * pi * L "volume of cup";
+      parameter Real Sin = 2 * R * pi * L "inner surface of cup";
+      parameter Real Sout = 2 * (R + cup_t) * pi * L "outer surface of cup";
       //cup materials
       parameter Real rho = 2200 "陶器密度　https://www.hakko.co.jp/qa/qakit/html/h01010.htm";
       parameter Real k = 1.3 "熱伝導率";
       parameter Real cp = 1050;
-      parameter Real h = 10 "カップ-外気の熱伝達率";
+      parameter Real h = 90 "カップ-外気の熱伝達率";
       //liquid parameter
       parameter Real h_l = 1000 "カップ内固液熱伝導率";
       //dripper parameter
@@ -1005,6 +1005,126 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         __OpenModelica_commandLineOptions = "",
         experiment(StartTime = 0, StopTime = 2400, Tolerance = 1e-06, Interval = 2.4));
     end CoffeeTest10;
+
+    model CoffeeTest11
+      import pi = Modelica.Constants.pi;
+      //target reslut
+      Real res;
+      //ambient
+      parameter Real Tamb = 273.15 + 24.8 "radius of cup";
+      //cup parameter
+      parameter Real R = 73 / 1000 / 2 "radius of cup";
+      parameter Real L = 96 / 1000 "height of cup";
+      parameter Real level_start = 60 / 1000 "初期水位";
+      parameter Real cup_t = 4 / 1000 "thichness of cup";
+      parameter Real cup_t_bottom = 4 / 1000 "thichness of cup";
+      parameter Real V = ((R + cup_t) ^ 2 - R ^ 2) * pi * L "volume of cup";
+      parameter Real Sin = 2 * R * pi * L "inner surface of cup";
+      parameter Real Sout = 2 * (R + cup_t) * pi * L "outer surface of cup";
+      //cup materials
+      parameter Real rho = 2200 "陶器密度　https://www.hakko.co.jp/qa/qakit/html/h01010.htm";
+      parameter Real k = 1.3 "熱伝導率";
+      parameter Real cp = 1050;
+      parameter Real h = 90 "カップ-外気の熱伝達率";
+      //liquid parameter
+      parameter Real h_l = 1000 "カップ内固液熱伝導率";
+      //dripper parameter
+      parameter Real drip_D = 5 / 1000 "ドリッパーの直径";
+      parameter Real drip_L = 10 / 1000 "ドリッパーの長さ";
+      replaceable package Medium = Modelica.Media.Water.StandardWater;
+      Modelica.Fluid.Vessels.OpenTank cup(redeclare package Medium = Medium, T_start = Tamb, crossArea = R ^ 2 * pi, height = L, level_start = 0, nPorts = 1, portsData = {Modelica.Fluid.Vessels.BaseClasses.VesselPortsData(diameter = R, height = 70 / 1000)}, use_HeatTransfer = true, use_portsData = true) annotation(
+        Placement(visible = true, transformation(origin = {50, -30}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
+      inner Modelica.Fluid.System system annotation(
+        Placement(visible = true, transformation(origin = {100, 176}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Thermal.HeatTransfer.Components.ThermalConductor thermalConductor1(G = 2 * pi * k * L / log((R + cup_t / 2) / R)) annotation(
+        Placement(visible = true, transformation(origin = {-42, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Thermal.HeatTransfer.Sources.FixedTemperature fixedTemperature2(T = Tamb) annotation(
+        Placement(visible = true, transformation(origin = {-186, -8}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Thermal.HeatTransfer.Components.ThermalConductor thermalConductor2(G = 2 * pi * k * L / log(R / (R - cup_t / 2))) annotation(
+        Placement(visible = true, transformation(origin = {-98, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Thermal.HeatTransfer.Components.HeatCapacitor heatCapacitor1(C = cp * V * rho, T(fixed = true, start = Tamb)) annotation(
+        Placement(visible = true, transformation(origin = {-72, -48}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Fluid.Vessels.OpenTank yakan(redeclare package Medium = Medium, T_start = 273.15 + 98, crossArea = R ^ 2 * pi, height = L, level_start = level_start, nPorts = 1, portsData = {Modelica.Fluid.Vessels.BaseClasses.VesselPortsData(diameter = 5 / 1000)}, use_HeatTransfer = true, use_portsData = true) annotation(
+        Placement(visible = true, transformation(origin = {50, 162}, extent = {{-20, -20}, {20, 20}}, rotation = 0)));
+      Modelica.Fluid.Pipes.StaticPipe pipe(redeclare package Medium = Medium, diameter = 15 / 1000, height_ab = -50 / 1000, length = 50 / 1000) annotation(
+        Placement(visible = true, transformation(origin = {50, 92}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
+      Modelica.Fluid.Valves.ValveIncompressible valveIncompressible1(redeclare package Medium = Medium, dp_nominal = 100000, filteredOpening = true, leakageOpening = 1e-6, m_flow_nominal = 1) annotation(
+        Placement(visible = true, transformation(origin = {50, 48}, extent = {{-10, -10}, {10, 10}}, rotation = -90)));
+      Modelica.Blocks.Sources.CombiTimeTable combiTimeTable1(columns = 2:2, fileName = "C:/Work/2018/Coffee/CoffeeTemperature/Experiment/WaterTemp_1.txt", tableName = "Tab1", tableOnFile = true) annotation(
+        Placement(visible = true, transformation(origin = {176, -180}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Blocks.Sources.Constant const5(k = 2 * R * pi * L * h) annotation(
+        Placement(visible = true, transformation(origin = {-8, 130}, extent = {{-10, -10}, {10, 10}}, rotation = 90)));
+      Modelica.Thermal.HeatTransfer.Components.Convection convection5 annotation(
+        Placement(visible = true, transformation(origin = {-8, 166}, extent = {{-10, 10}, {10, -10}}, rotation = 0)));
+      Modelica.Blocks.Sources.TimeTable timeTable1(table = [0, 0; 5, 0; 15, 1; 20, 0; 25, 0]) annotation(
+        Placement(visible = true, transformation(origin = {90, 48}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      Modelica.Thermal.HeatTransfer.Components.Convection convection1 annotation(
+        Placement(visible = true, transformation(origin = {-52, 30}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+      Modelica.Blocks.Sources.Constant const(k = 65 * R ^ 2 * pi) annotation(
+        Placement(visible = true, transformation(origin = {-54, 70}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+      CoffeeTemperature.CoffeeThermal.NaturalConvection naturalConvection1(L = 2 * (R + cup_t), area = 2 * (R + cup_t) * pi * L, convectionType = CoffeeTemperature.CoffeeThermal.ConvectionType.vertical_planes_cylinder) annotation(
+        Placement(visible = true, transformation(origin = {-142, -74}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+      CoffeeTemperature.CoffeeThermal.NaturalConvection naturalConvection21(L = (R + cup_t) ^ 2 * pi / ((R + cup_t) * 2 * pi), area = 2 * (R + cup_t) ^ 2 * pi, convectionType = CoffeeTemperature.CoffeeThermal.ConvectionType.vertical_planes_cylinder) annotation(
+        Placement(visible = true, transformation(origin = {-142, -124}, extent = {{10, -10}, {-10, 10}}, rotation = 0)));
+      CoffeeTemperature.CoffeeThermal.EnclosedConvection enclosedConvection1(H = L, L = R, area = Sin) annotation(
+        Placement(visible = true, transformation(origin = {2, -82}, extent = {{-10, -10}, {10, 10}}, rotation = 0)));
+    equation
+      connect(enclosedConvection1.fluid, cup.heatPort) annotation(
+        Line(points = {{12, -82}, {30, -82}, {30, -30}, {30, -30}}, color = {191, 0, 0}));
+      connect(enclosedConvection1.solid, thermalConductor1.port_b) annotation(
+        Line(points = {{-8, -82}, {-32, -82}, {-32, -82}, {-32, -82}}, color = {191, 0, 0}));
+      connect(naturalConvection21.fluid, fixedTemperature2.port) annotation(
+        Line(points = {{-152, -124}, {-176, -124}, {-176, -8}, {-176, -8}}, color = {191, 0, 0}));
+      connect(thermalConductor2.port_a, naturalConvection21.solid) annotation(
+        Line(points = {{-108, -82}, {-108, -82}, {-108, -124}, {-132, -124}, {-132, -124}}, color = {191, 0, 0}));
+      connect(naturalConvection1.fluid, fixedTemperature2.port) annotation(
+        Line(points = {{-152, -74}, {-176, -74}, {-176, -8}, {-176, -8}}, color = {191, 0, 0}));
+      connect(naturalConvection1.solid, thermalConductor2.port_a) annotation(
+        Line(points = {{-132, -74}, {-108, -74}, {-108, -82}, {-108, -82}}, color = {191, 0, 0}));
+      connect(const.y, convection1.Gc) annotation(
+        Line(points = {{-43, 70}, {-51, 70}, {-51, 40}, {-53, 40}}, color = {0, 0, 127}));
+      connect(cup.heatPort, convection1.solid) annotation(
+        Line(points = {{30, -30}, {0, -30}, {0, 30}, {-42, 30}, {-42, 30}}, color = {191, 0, 0}));
+      connect(fixedTemperature2.port, convection1.fluid) annotation(
+        Line(points = {{-176, -8}, {-119, -8}, {-119, 30}, {-62, 30}}, color = {191, 0, 0}));
+      connect(heatCapacitor1.port, thermalConductor1.port_a) annotation(
+        Line(points = {{-72, -58}, {-72, -82}, {-52, -82}}, color = {191, 0, 0}));
+      connect(thermalConductor2.port_b, heatCapacitor1.port) annotation(
+        Line(points = {{-88, -82}, {-72, -82}, {-72, -58}, {-72, -58}}, color = {191, 0, 0}));
+      connect(convection5.solid, fixedTemperature2.port) annotation(
+        Line(points = {{-18, 166}, {-176, 166}, {-176, -8}}, color = {191, 0, 0}));
+      connect(timeTable1.y, valveIncompressible1.opening) annotation(
+        Line(points = {{102, 48}, {60, 48}, {60, 48}, {58, 48}}, color = {0, 0, 127}));
+      connect(const5.y, convection5.Gc) annotation(
+        Line(points = {{-8, 142}, {-8, 142}, {-8, 156}, {-8, 156}}, color = {0, 0, 127}));
+      connect(convection5.fluid, yakan.heatPort) annotation(
+        Line(points = {{2, 166}, {28, 166}, {28, 162}, {30, 162}}, color = {191, 0, 0}));
+      connect(valveIncompressible1.port_b, cup.ports[1]) annotation(
+        Line(points = {{50, 38}, {50, 38}, {50, -50}, {50, -50}}, color = {0, 127, 255}));
+      connect(pipe.port_b, valveIncompressible1.port_a) annotation(
+        Line(points = {{50, 82}, {50, 82}, {50, 58}, {50, 58}}, color = {0, 127, 255}));
+      connect(yakan.ports[1], pipe.port_a) annotation(
+        Line(points = {{50, 142}, {50, 142}, {50, 102}, {50, 102}}, color = {0, 127, 255}, thickness = 0.5));
+      res = (cup.heatPort.T - 273.15 - combiTimeTable1.y[1]) ^ 2;
+      annotation(
+        Documentation(info = "<html>
+<p>
+熱伝導率
+http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
+</p>
+</html>"),
+        uses(Modelica(version = "3.2.2")),
+        Diagram(coordinateSystem(extent = {{-300, -300}, {300, 300}})),
+        Icon(coordinateSystem(extent = {{-200, -200}, {200, 200}})),
+        version = "",
+        __OpenModelica_commandLineOptions = "",
+        experiment(StartTime = 0, StopTime = 2400, Tolerance = 1e-06, Interval = 2.4));
+    end CoffeeTest11;
+
+
+
+
+
 
 
 
@@ -1154,685 +1274,278 @@ http://japan-miyabi.com/thermal_light/data/03/conductivity.htm
         experiment(StartTime = 0, StopTime = 100, Tolerance = 1e-06, Interval = 0.1));
     end tankTest1;
 
-    model Nu1
-      /* Calculate Nu number of vertical plate*/
-      import Modelica.Media;
-      //package medium = CoffeeTemperature.Media.IdealGases_Light.SimpleAir;
-      package medium = Modelica.Media.Air.DryAirNasa;
-      medium.ThermodynamicState state;
-      constant Real g = 9.81;
-      constant Real p = 101325;
-      parameter Real T = 45 + 273.15;
-      //parameter Real T = 20+273.15;
-      Real k;
-      Real Cp;
-      Real d;
-      Real Pr;
-      //Real nu "kinematic viscosity";
-      Real mu "dynamic viscosity";
-      Real beta;
-      Real Gr;
-      Real C;
-      Real m;
-      Real Nu;
-      Real h;
-      parameter Real dT = 50;
-      parameter Real L = 73 / 1000;
-    equation
-// material property
-      state = medium.setState_pT(p, T);
-      d = medium.density(state);
-      k = medium.thermalConductivity(state);
-      Cp = medium.specificHeatCapacityCp(state);
-      mu = medium.dynamicViscosity(state);
-      beta = medium.density_derT_p(state) * (-1 / d);
-      if Pr * Gr >= 10 ^ 5 and Pr * Gr <= 10 ^ 8 then
-        C = 0.56;
-        m = 0.25;
-      elseif Pr * Gr > 10 ^ 8 then
-        C = 0.10;
-        m = 1 / 3;
-      else
-        C = 0;
-        m = 0;
-        assert(Pr * Gr > 10 ^ 5, "Pr*Gr<10^5 Can't adapt this model");
-      end if;
-//assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
-    algorithm
-      Pr := mu * Cp / k;
-      Gr := g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-      Nu := C * (Pr * Gr) ^ m;
-      h := k / L * Nu;
-//dT=Ts-Tbulk;
-    end Nu1;
-
-    model NaturalConvection "Lumped thermal element for heat convection (Q_flow = Gc*dT)"
-      Modelica.SIunits.HeatFlowRate Q_flow "Heat flow rate from solid -> fluid";
-      Modelica.SIunits.TemperatureDifference dT "= solid.T - fluid.T";
-      Modelica.SIunits.Temperature T;
-      Real Gc(unit = "W/K") "Signal representing the convective thermal conductance in [W/K]" annotation(
-        Placement(transformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = 270)));
-      parameter Modelica.SIunits.Area area;
-      parameter Modelica.SIunits.Length L "characteristicLength";
-      Modelica.SIunits.CoefficientOfHeatTransfer h;
-      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a solid annotation(
-        Placement(transformation(extent = {{-110, -10}, {-90, 10}})));
-      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_b fluid annotation(
-        Placement(transformation(extent = {{90, -10}, {110, 10}})));
-      //Nusselt Number Cal
-      //import Modelica.Media;
-      replaceable package medium = Modelica.Media.Air.DryAirNasa;
-      medium.ThermodynamicState state;
-      constant Real g = 9.81;
-      constant Real p = 101325;
-      //Physics properties
-      Real k;
-      Real Cp;
-      Real d;
-      Real Pr;
-      Real mu "dynamic viscosity";
-      Real beta;
-      Real Gr;
-      Real C;
-      Real m;
-      Real Nu;
-      Real Ra "Rayleigh number";
-    equation
-      dT = solid.T - fluid.T;
-      T = (solid.T + fluid.T) / 2;
-      solid.Q_flow = Q_flow;
-      fluid.Q_flow = -Q_flow;
-      Gc = area * h;
-      Q_flow = Gc * dT;
-      state = medium.setState_pT(p, T);
-      d = medium.density(state);
-      k = medium.thermalConductivity(state);
-      Cp = medium.specificHeatCapacityCp(state);
-      mu = medium.dynamicViscosity(state);
-      beta = medium.density_derT_p(state) * (-1 / d);
-      Ra = Pr * Gr;
-      if Pr * Gr >= 10 ^ 5 and Pr * Gr <= 10 ^ 8 then
-        C = 0.56;
-        m = 0.25;
-        Pr = mu * Cp / k;
-        Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-        Nu = C * (Pr * Gr) ^ m;
-        h = k / L * Nu;
-      elseif Pr * Gr > 10 ^ 8 then
-        C = 0.10;
-        m = 1 / 3;
-        Pr = mu * Cp / k;
-        Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-        Nu = C * (Pr * Gr) ^ m;
-        h = k / L * Nu;
-      else
-        C = 0;
-        m = 0;
-        Pr = 0;
-        Gr = 0;
-        Nu = 0;
-        h = 5;
-//assert(Pr * Gr > 10 ^ 5, "Pr*Gr<10^5 Can't adapt this model");
-      end if;
-//assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
-/*
-      Pr = mu * Cp / k;
-      Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-      Nu = C * (Pr * Gr) ^ m;
-      h = k / L * Nu;
-    /*
-    algorithm
-      Pr := mu * Cp / k;
-      Gr := g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-      Nu := C * (Pr * Gr) ^ m;
-      h := k / L * Nu;
-      Gc:=area*h;
-    */
-      annotation(
-        Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {255, 255, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-62, 80}, {98, -80}}), Rectangle(fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward, extent = {{-90, 80}, {-60, -80}}), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name"), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0}), Text(origin = {-23, 90}, lineThickness = 1.5, extent = {{-41, 20}, {103, -20}}, textString = "NaturalConvection")}),
-        Documentation(info = "<html>
-    <p>
-    This is a model of linear heat convection, e.g., the heat transfer between a plate and the surrounding air; see also:
-    <a href=\"modelica://Modelica.Thermal.HeatTransfer.Components.ConvectiveResistor\">ConvectiveResistor</a>.
-    It may be used for complicated solid geometries and fluid flow over the solid by determining the
-    convective thermal conductance Gc by measurements. The basic constitutive equation for convection is
-    </p>
-    <pre>
-    Q_flow = Gc*(solid.T - fluid.T);
-    Q_flow: Heat flow rate from connector 'solid' (e.g., a plate)
-      to connector 'fluid' (e.g., the surrounding air)
-    </pre>
-    <p>
-    Gc = G.signal[1] is an input signal to the component, since Gc is
-    nearly never constant in practice. For example, Gc may be a function
-    of the speed of a cooling fan. For simple situations,
-    Gc may be <i>calculated</i> according to
-    </p>
-    <pre>
-    Gc = A*h
-    A: Convection area (e.g., perimeter*length of a box)
-    h: Heat transfer coefficient
-    </pre>
-    <p>
-    where the heat transfer coefficient h is calculated
-    from properties of the fluid flowing over the solid. Examples:
-    </p>
-    <p>
-    <b>Machines cooled by air</b> (empirical, very rough approximation according
-    to R. Fischer: Elektrische Maschinen, 10th edition, Hanser-Verlag 1999,
-    p. 378):
-    </p>
-    <pre>
-    h = 7.8*v^0.78 [W/(m2.K)] (forced convection)
-      = 12         [W/(m2.K)] (free convection)
-    where
-      v: Air velocity in [m/s]
-    </pre>
-    <p><b>Laminar</b> flow with constant velocity of a fluid along a
-    <b>flat plate</b> where the heat flow rate from the plate
-    to the fluid (= solid.Q_flow) is kept constant
-    (according to J.P.Holman: Heat Transfer, 8th edition,
-    McGraw-Hill, 1997, p.270):
-    </p>
-    <pre>
-    h  = Nu*k/x;
-    Nu = 0.453*Re^(1/2)*Pr^(1/3);
-    where
-      h  : Heat transfer coefficient
-      Nu : = h*x/k       (Nusselt number)
-      Re : = v*x*rho/mue (Reynolds number)
-      Pr : = cp*mue/k    (Prandtl number)
-      v  : Absolute velocity of fluid
-      x  : distance from leading edge of flat plate
-      rho: density of fluid (material constant
-      mue: dynamic viscosity of fluid (material constant)
-      cp : specific heat capacity of fluid (material constant)
-      k  : thermal conductivity of fluid (material constant)
-    and the equation for h holds, provided
-      Re &lt; 5e5 and 0.6 &lt; Pr &lt; 50
-    </pre>
-    </html>"),
-        Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-90, 80}, {-60, -80}}, lineColor = {0, 0, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Text(extent = {{-40, 40}, {80, 20}}, lineColor = {255, 0, 0}, textString = "Q_flow"), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0})}));
-    end NaturalConvection;
-
-    function NusseltNumber
-      /* Calculate Nu number of vertical plate*/
-      import Modelica.Media;
-      replaceable package medium = CoffeeTemperature.Media.IdealGases_Light.SimpleAir;
-      //replaceable package medium = Modelica.Media.Air.DryAirNasa;
-      //Physics quantity
-      input Real dT;
-      input Real L;
-      input Real T;
-      output Real h;
-      //
-      medium.ThermodynamicState state;
-      constant Real g = 9.81;
-      constant Real p = 101325;
-      //Physics properties
-      Real k;
-      Real Cp;
-      Real d;
-      Real Pr;
-      Real mu "dynamic viscosity";
-      Real beta;
-      Real Gr;
-      Real C;
-      Real m;
-      Real Nu;
-    equation
-// material property
-      state = medium.setState_pT(p, T);
-      d = medium.density(state);
-      k = medium.thermalConductivity(state);
-      Cp = medium.specificHeatCapacityCp(state);
-      mu = medium.dynamicViscosity(state);
-      beta = medium.density_derT_p(state) * (-1 / d);
-      if Pr * Gr >= 10 ^ 5 and Pr * Gr <= 10 ^ 8 then
-        C = 0.56;
-        m = 0.25;
-      elseif Pr * Gr > 10 ^ 8 then
-        C = 0.10;
-        m = 1 / 3;
-      else
-        C = 0;
-        m = 0;
-        assert(Pr * Gr > 10 ^ 5, "Pr*Gr<10^5 Can't adapt this model");
-      end if;
-//assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
-    algorithm
-      Pr := mu * Cp / k;
-      Gr := g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-      Nu := C * (Pr * Gr) ^ m;
-      h := k / L * Nu;
-    end NusseltNumber;
-
-    model Nu2
-      /* Calculate Nu number of vertical plate*/
-      import Modelica.Media;
-      //package medium = CoffeeTemperature.Media.IdealGases_Light.SimpleAir;
-      package medium = Modelica.Media.Air.DryAirNasa;
-      medium.ThermodynamicState state;
-      constant Real g = 9.81;
-      constant Real p = 101325;
-      parameter Real T = 45 + 273.15;
-      parameter Real dT = 50;
-      parameter Real L = 73 / 1000;
-      //parameter Real T = 20+273.15;
-      Real k;
-      Real Cp;
-      Real d;
-      Real Pr;
-      Real aaa;
-      //Real nu "kinematic viscosity";
-      Real mu "dynamic viscosity";
-      Real beta;
-      Real Gr;
-      Real C;
-      Real m;
-      Real Nu;
-      Real h;
-    equation
-// material property
-      state = medium.setState_pT(p, T);
-      d = medium.density(state);
-      k = medium.thermalConductivity(state);
-      Cp = medium.specificHeatCapacityCp(state);
-      mu = medium.dynamicViscosity(state);
-      beta = medium.density_derT_p(state) * (-1 / d);
-      if Pr * Gr >= 10 ^ 5 and Pr * Gr <= 10 ^ 8 then
-        C = 0.56;
-        m = 0.25;
-      elseif Pr * Gr > 10 ^ 8 then
-        C = 0.10;
-        m = 1 / 3;
-      else
-        C = 1;
-        m = 1;
-      end if;
-//assert(Pr>0.72, "Pr < 0.72  Can't adapt this model");
-      aaa = Pr * Gr;
-    algorithm
-      Pr := mu * Cp / k;
-      Gr := g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-      Nu := C * (Pr * Gr) ^ m;
-      h := k / L * Nu;
-//dT=Ts-Tbulk;
-    end Nu2;
-
-    model NaturalConvection2 "Lumped thermal element for heat convection (Q_flow = Gc*dT)"
-      Modelica.SIunits.HeatFlowRate Q_flow "Heat flow rate from solid -> fluid";
-      Modelica.SIunits.TemperatureDifference dT "= solid.T - fluid.T";
-      Modelica.SIunits.Temperature T;
-      Real Gc(unit = "W/K") "Signal representing the convective thermal conductance in [W/K]" annotation(
-        Placement(transformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = 270)));
-      parameter Modelica.SIunits.Area area;
-      parameter Modelica.SIunits.Length L "characteristicLength, heated Area/Perimeter length";
-      Modelica.SIunits.CoefficientOfHeatTransfer h;
-      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a solid annotation(
-        Placement(transformation(extent = {{-110, -10}, {-90, 10}})));
-      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_b fluid annotation(
-        Placement(transformation(extent = {{90, -10}, {110, 10}})));
-      //Nusselt Number Cal
-      //import Modelica.Media;
-      replaceable package medium = Modelica.Media.Air.DryAirNasa;
-      medium.ThermodynamicState state;
-      constant Real g = 9.81;
-      constant Real p = 101325;
-      //Physics properties
-      Real C;
-      Real n;
-      Real k;
-      Real Cp;
-      Real d;
-      Real Pr;
-      Real mu "dynamic viscosity";
-      Real beta;
-      Real Gr;
-      parameter ConvectionType convectionType;
-      Real Nu;
-      Real Ra "Rayleigh number";
-      Real A1, A2;
-    equation
-      dT = solid.T - fluid.T;
-      T = (solid.T + fluid.T) / 2;
-      solid.Q_flow = Q_flow;
-      fluid.Q_flow = -Q_flow;
-      Gc = area * h;
-      Q_flow = Gc * dT;
-      state = medium.setState_pT(p, T);
-      d = medium.density(state);
-      k = medium.thermalConductivity(state);
-      Cp = medium.specificHeatCapacityCp(state);
-      mu = medium.dynamicViscosity(state);
-      beta = medium.density_derT_p(state) * (-1 / d);
-      Ra = Pr * Gr;
-      Pr = mu * Cp / k;
-      Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-      if convectionType == ConvectionType.vertical_planes_cylinder then
-        A1 = 0.387 * (Pr * Gr) ^ (1 / 6);
-        A2 = (1 + (0.492 / Pr) ^ 9 / 16) ^ (8 / 27);
-        Nu = (0.825 + A1 / A2) ^ 2;
-        h = k / L * Nu;
-//dummy
-        C = 1;
-        n = 1;
-      elseif convectionType == ConvectionType.LowerSurface_of_heatedPlates then
-        C = 0.27;
-        n = 1 / 4;
-        Nu = C * Ra ^ n;
-//dummy
-        A1 = 1;
-        A2 = 1;
-        if Ra > 10 ^ 5 then
-          h = k / L * Nu;
-        else
-          h = 5;
-        end if;
-      end if;
-      annotation(
-        Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {255, 255, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-62, 80}, {98, -80}}), Rectangle(fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward, extent = {{-90, 80}, {-60, -80}}), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name"), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0}), Text(origin = {-23, 90}, lineThickness = 1.5, extent = {{-41, 20}, {103, -20}}, textString = "NaturalConvection")}),
-        Documentation(info = "<html>
-    <p>
-    This is a model of linear heat convection, e.g., the heat transfer between a plate and the surrounding air; see also:
-    <a href=\"modelica://Modelica.Thermal.HeatTransfer.Components.ConvectiveResistor\">ConvectiveResistor</a>.
-    It may be used for complicated solid geometries and fluid flow over the solid by determining the
-    convective thermal conductance Gc by measurements. The basic constitutive equation for convection is
-    </p>
-    <pre>
-    Q_flow = Gc*(solid.T - fluid.T);
-    Q_flow: Heat flow rate from connector 'solid' (e.g., a plate)
-      to connector 'fluid' (e.g., the surrounding air)
-    </pre>
-    <p>
-    Gc = G.signal[1] is an input signal to the component, since Gc is
-    nearly never constant in practice. For example, Gc may be a function
-    of the speed of a cooling fan. For simple situations,
-    Gc may be <i>calculated</i> according to
-    </p>
-    <pre>
-    Gc = A*h
-    A: Convection area (e.g., perimeter*length of a box)
-    h: Heat transfer coefficient
-    </pre>
-    <p>
-    where the heat transfer coefficient h is calculated
-    from properties of the fluid flowing over the solid. Examples:
-    </p>
-    <p>
-    <b>Machines cooled by air</b> (empirical, very rough approximation according
-    to R. Fischer: Elektrische Maschinen, 10th edition, Hanser-Verlag 1999,
-    p. 378):
-    </p>
-    <pre>
-    h = 7.8*v^0.78 [W/(m2.K)] (forced convection)
-      = 12         [W/(m2.K)] (free convection)
-    where
-      v: Air velocity in [m/s]
-    </pre>
-    <p><b>Laminar</b> flow with constant velocity of a fluid along a
-    <b>flat plate</b> where the heat flow rate from the plate
-    to the fluid (= solid.Q_flow) is kept constant
-    (according to J.P.Holman: Heat Transfer, 8th edition,
-    McGraw-Hill, 1997, p.270):
-    </p>
-    <pre>
-    h  = Nu*k/x;
-    Nu = 0.453*Re^(1/2)*Pr^(1/3);
-    where
-      h  : Heat transfer coefficient
-      Nu : = h*x/k       (Nusselt number)
-      Re : = v*x*rho/mue (Reynolds number)
-      Pr : = cp*mue/k    (Prandtl number)
-      v  : Absolute velocity of fluid
-      x  : distance from leading edge of flat plate
-      rho: density of fluid (material constant
-      mue: dynamic viscosity of fluid (material constant)
-      cp : specific heat capacity of fluid (material constant)
-      k  : thermal conductivity of fluid (material constant)
-    and the equation for h holds, provided
-      Re &lt; 5e5 and 0.6 &lt; Pr &lt; 50
-    </pre>
-    </html>"),
-        Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-90, 80}, {-60, -80}}, lineColor = {0, 0, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Text(extent = {{-40, 40}, {80, 20}}, lineColor = {255, 0, 0}, textString = "Q_flow"), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0})}));
-    end NaturalConvection2;
-
-    type ConvectionType = enumeration(vertical_planes_cylinder, LowerSurface_of_heatedPlates);
-
-    model EnclosedConvection "Lumped thermal element for heat convection (Q_flow = Gc*dT)"
-      Modelica.SIunits.HeatFlowRate Q_flow "Heat flow rate from solid -> fluid";
-      Modelica.SIunits.TemperatureDifference dT "= solid.T - fluid.T";
-      Modelica.SIunits.Temperature T;
-      Real Gc(unit = "W/K") "Signal representing the convective thermal conductance in [W/K]" annotation(
-        Placement(transformation(origin = {0, 100}, extent = {{-20, -20}, {20, 20}}, rotation = 270)));
-      parameter Modelica.SIunits.Area area;
-      parameter Modelica.SIunits.Length L "length";
-      parameter Modelica.SIunits.Length H "Height";
-      Modelica.SIunits.CoefficientOfHeatTransfer h;
-      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a solid annotation(
-        Placement(transformation(extent = {{-110, -10}, {-90, 10}})));
-      Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_b fluid annotation(
-        Placement(transformation(extent = {{90, -10}, {110, 10}})));
-      //Nusselt Number Cal
-      replaceable package medium = Modelica.Media.Water.StandardWater;
-      medium.ThermodynamicState state;
-      constant Real g = 9.81;
-      constant Real p = 101325;
-      //Physics properties
-      Real k;
-      Real Cp;
-      Real d;
-      Real Pr;
-      Real mu "dynamic viscosity";
-      Real beta;
-      Real Gr;
-      Real Nu;
-      Real Ra "Rayleigh number";
-      Real A1;
-    equation
-      dT = solid.T - fluid.T;
-      T = (solid.T + fluid.T) / 2;
-      solid.Q_flow = Q_flow;
-      fluid.Q_flow = -Q_flow;
-      Gc = area * h;
-      Q_flow = Gc * dT;
-      state = medium.setState_pT(p, T);
-      d = medium.density(state);
-      k = medium.thermalConductivity(state);
-      Cp = medium.specificHeatCapacityCp(state);
-      mu = medium.dynamicViscosity(state);
-//beta = medium.density_derT_p(state) * (-1 / d);
-      beta = 2.1;
-      Ra = Pr * Gr;
-      Pr = mu * Cp / k;
-      Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
-      A1 = Pr * Ra / (0.2 + Pr);
-      if 2 < H / L and H / L < 10 and Pr < 10 ^ 5 and 10 ^ 3 < Ra and Ra < 10 ^ 10 then
-        Nu = 0.22 * A1 ^ 0.28 * (H / L) * (-1 / 4);
-        h = k / L * Nu;
-      elseif 1 < H / L and H / L < 2 and 10 ^ (-3) < Pr and Pr < 10 ^ 5 and A1 > 10 ^ 2 then
-        Nu = 0.18 * A1 ^ 0.29;
-        h = k / L * Nu;
-      else
-        Nu = 1;
-        h = 1000;
-      end if;
-      annotation(
-        Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {255, 255, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-62, 80}, {98, -80}}), Rectangle(fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward, extent = {{-90, 80}, {-60, -80}}), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name"), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0}), Text(origin = {-23, 90}, lineThickness = 1.5, extent = {{-41, 20}, {103, -20}}, textString = "NaturalConvection")}),
-        Documentation(info = "<html>
-    <p>
-    This is a model of linear heat convection, e.g., the heat transfer between a plate and the surrounding air; see also:
-    <a href=\"modelica://Modelica.Thermal.HeatTransfer.Components.ConvectiveResistor\">ConvectiveResistor</a>.
-    It may be used for complicated solid geometries and fluid flow over the solid by determining the
-    convective thermal conductance Gc by measurements. The basic constitutive equation for convection is
-    </p>
-    <pre>
-    Q_flow = Gc*(solid.T - fluid.T);
-    Q_flow: Heat flow rate from connector 'solid' (e.g., a plate)
-      to connector 'fluid' (e.g., the surrounding air)
-    </pre>
-    <p>
-    Gc = G.signal[1] is an input signal to the component, since Gc is
-    nearly never constant in practice. For example, Gc may be a function
-    of the speed of a cooling fan. For simple situations,
-    Gc may be <i>calculated</i> according to
-    </p>
-    <pre>
-    Gc = A*h
-    A: Convection area (e.g., perimeter*length of a box)
-    h: Heat transfer coefficient
-    </pre>
-    <p>
-    where the heat transfer coefficient h is calculated
-    from properties of the fluid flowing over the solid. Examples:
-    </p>
-    <p>
-    <b>Machines cooled by air</b> (empirical, very rough approximation according
-    to R. Fischer: Elektrische Maschinen, 10th edition, Hanser-Verlag 1999,
-    p. 378):
-    </p>
-    <pre>
-    h = 7.8*v^0.78 [W/(m2.K)] (forced convection)
-      = 12         [W/(m2.K)] (free convection)
-    where
-      v: Air velocity in [m/s]
-    </pre>
-    <p><b>Laminar</b> flow with constant velocity of a fluid along a
-    <b>flat plate</b> where the heat flow rate from the plate
-    to the fluid (= solid.Q_flow) is kept constant
-    (according to J.P.Holman: Heat Transfer, 8th edition,
-    McGraw-Hill, 1997, p.270):
-    </p>
-    <pre>
-    h  = Nu*k/x;
-    Nu = 0.453*Re^(1/2)*Pr^(1/3);
-    where
-      h  : Heat transfer coefficient
-      Nu : = h*x/k       (Nusselt number)
-      Re : = v*x*rho/mue (Reynolds number)
-      Pr : = cp*mue/k    (Prandtl number)
-      v  : Absolute velocity of fluid
-      x  : distance from leading edge of flat plate
-      rho: density of fluid (material constant
-      mue: dynamic viscosity of fluid (material constant)
-      cp : specific heat capacity of fluid (material constant)
-      k  : thermal conductivity of fluid (material constant)
-    and the equation for h holds, provided
-      Re &lt; 5e5 and 0.6 &lt; Pr &lt; 50
-    </pre>
-    </html>"),
-        Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-90, 80}, {-60, -80}}, lineColor = {0, 0, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Text(extent = {{-40, 40}, {80, 20}}, lineColor = {255, 0, 0}, textString = "Q_flow"), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0})}));
-    end EnclosedConvection;
   end UnitTest;
 
   package CoffeeThermal
-    model NaturalConvection "Lumped thermal element for heat convection (Q_flow = Gc*dT)"
-      //  import Modelica.Media;
-      replaceable package medium = CoffeeTemperature.Media.IdealGases_Light.SimpleAir;
-      medium.ThermodynamicState state;
-      import Modelica.Thermal.HeatTransfer.Interfaces;
-      Modelica.SIunits.HeatFlowRate Q_flow "Heat flow rate from solid -> fluid";
-      Modelica.SIunits.TemperatureDifference dT "= solid.T - fluid.T";
-      Modelica.SIunits.Area A "Area of heat transfer";
-      Modelica.SIunits.CoefficientOfHeatTransfer h "heat transfer coefficient";
-      Interfaces.HeatPort_a solid annotation(
-        Placement(transformation(extent = {{-110, -10}, {-90, 10}})));
-      Interfaces.HeatPort_b fluid annotation(
-        Placement(transformation(extent = {{90, -10}, {110, 10}})));
-      /*
-                              function heatTransferCoeff
-                                extends Modelica.Icons.Function;
-                              end heatTransferCoeff;
-                            */
-      constant Real p = 101325;
-      Real T;
-      Real k;
-      Real Cp;
-      Real d;
-      Real mu;
-      Real Pr;
-    equation
-      dT = solid.T - fluid.T;
-      solid.Q_flow = Q_flow;
-      fluid.Q_flow = -Q_flow;
-      Q_flow = h * A * dT;
-//heatTransferCoeff
-//Pr Number
-      T = (solid.T + fluid.T) / 2;
-      state = medium.setState_pT(p, T);
-      d = medium.density(state);
-      k = medium.thermalConductivity(state);
-      Cp = medium.specificHeatCapacityCp(state);
-      mu = medium.dynamicViscosity(state) * d;
-      Pr = mu * Cp / k;
-//Gr Number
-      annotation(
-        Icon(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-62, 80}, {98, -80}}, lineColor = {255, 255, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid), Rectangle(extent = {{-90, 80}, {-60, -80}}, lineColor = {0, 0, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward), Text(extent = {{-150, -90}, {150, -130}}, textString = "%name", lineColor = {0, 0, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0}), Text(extent = {{22, 124}, {92, 98}}, lineColor = {0, 0, 0}, textString = "Gc")}),
-        Documentation(info = "<html>
-    <p>
-    This is a model of linear heat convection, e.g., the heat transfer between a plate and the surrounding air; see also:
-    <a href=\"modelica://Modelica.Thermal.HeatTransfer.Components.ConvectiveResistor\">ConvectiveResistor</a>.
-    It may be used for complicated solid geometries and fluid flow over the solid by determining the
-    convective thermal conductance Gc by measurements. The basic constitutive equation for convection is
-    </p>
-    <pre>
-    Q_flow = Gc*(solid.T - fluid.T);
-    Q_flow: Heat flow rate from connector 'solid' (e.g., a plate)
-      to connector 'fluid' (e.g., the surrounding air)
-    </pre>
-    <p>
-    Gc = G.signal[1] is an input signal to the component, since Gc is
-    nearly never constant in practice. For example, Gc may be a function
-    of the speed of a cooling fan. For simple situations,
-    Gc may be <i>calculated</i> according to
-    </p>
-    <pre>
-    Gc = A*h
-    A: Convection area (e.g., perimeter*length of a box)
-    h: Heat transfer coefficient
-    </pre>
-    <p>
-    where the heat transfer coefficient h is calculated
-    from properties of the fluid flowing over the solid. Examples:
-    </p>
-    <p>
-    <b>Machines cooled by air</b> (empirical, very rough approximation according
-    to R. Fischer: Elektrische Maschinen, 10th edition, Hanser-Verlag 1999,
-    p. 378):
-    </p>
-    <pre>
-    h = 7.8*v^0.78 [W/(m2.K)] (forced convection)
-      = 12         [W/(m2.K)] (free convection)
-    where
-      v: Air velocity in [m/s]
-    </pre>
-    <p><b>Laminar</b> flow with constant velocity of a fluid along a
-    <b>flat plate</b> where the heat flow rate from the plate
-    to the fluid (= solid.Q_flow) is kept constant
-    (according to J.P.Holman: Heat Transfer, 8th edition,
-    McGraw-Hill, 1997, p.270):
-    </p>
-    <pre>
-    h  = Nu*k/x;
-    Nu = 0.453*Re^(1/2)*Pr^(1/3);
-    where
-      h  : Heat transfer coefficient
-      Nu : = h*x/k       (Nusselt number)
-      Re : = v*x*rho/mue (Reynolds number)
-      Pr : = cp*mue/k    (Prandtl number)
-      v  : Absolute velocity of fluid
-      x  : distance from leading edge of flat plate
-      rho: density of fluid (material constant
-      mue: dynamic viscosity of fluid (material constant)
-      cp : specific heat capacity of fluid (material constant)
-      k  : thermal conductivity of fluid (material constant)
-    and the equation for h holds, provided
-      Re &lt; 5e5 and 0.6 &lt; Pr &lt; 50
-    </pre>
-    </html>"),
-        Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-90, 80}, {-60, -80}}, lineColor = {0, 0, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Text(extent = {{-40, 40}, {80, 20}}, lineColor = {255, 0, 0}, textString = "Q_flow"), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0})}));
-    end NaturalConvection;
+  model NaturalConvection "Lumped thermal element for heat convection (Q_flow = Gc*dT)"
+    Modelica.SIunits.HeatFlowRate Q_flow "Heat flow rate from solid -> fluid";
+    Modelica.SIunits.TemperatureDifference dT "= solid.T - fluid.T";
+    Modelica.SIunits.Temperature T;
+    Real Gc;
+    parameter Modelica.SIunits.Area area;
+    parameter Modelica.SIunits.Length L "characteristicLength, heated Area/Perimeter length";
+    Modelica.SIunits.CoefficientOfHeatTransfer h;
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a solid annotation(
+      Placement(transformation(extent = {{-110, -10}, {-90, 10}})));
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_b fluid annotation(
+      Placement(transformation(extent = {{90, -10}, {110, 10}})));
+    //Nusselt Number Cal
+    //import Modelica.Media;
+    replaceable package medium = Modelica.Media.Air.DryAirNasa;
+    medium.ThermodynamicState state;
+    constant Real g = 9.81;
+    constant Real p = 101325;
+    //Physics properties
+    Real C;
+    Real n;
+    Real k;
+    Real Cp;
+    Real d;
+    Real Pr;
+    Real mu "dynamic viscosity";
+    Real beta;
+    Real Gr;
+    parameter CoffeeTemperature.CoffeeThermal.ConvectionType convectionType;
+    Real Nu;
+    Real Ra "Rayleigh number";
+    Real A1, A2;
+  equation
+    dT = solid.T - fluid.T;
+    T = (solid.T + fluid.T) / 2;
+    solid.Q_flow = Q_flow;
+    fluid.Q_flow = -Q_flow;
+    Gc = area * h;
+    Q_flow = Gc * dT;
+    
+    state = medium.setState_pT(p, T);
+    mu = medium.dynamicViscosity(state);
+    
+    d = medium.density(state);
+    k = medium.thermalConductivity(state);
+    Cp = medium.specificHeatCapacityCp(state);
+    mu = medium.dynamicViscosity(state);
+    beta = medium.density_derT_p(state) * (-1 / d);
+    Ra = Pr * Gr;
+    Pr = mu * Cp / k;
+    Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
+    if convectionType == ConvectionType.vertical_planes_cylinder then
+      A1 = 0.387 * (Pr * Gr) ^ (1 / 6);
+      A2 = (1 + (0.492 / Pr) ^ 9 / 16) ^ (8 / 27);
+      Nu = (0.825 + A1 / A2) ^ 2;
+      h = k / L * Nu;
+  //dummy
+      C = 1;
+      n = 1;
+    elseif convectionType == ConvectionType.LowerSurface_of_heatedPlates then
+      C = 0.27;
+      n = 1 / 4;
+      Nu = C * Ra ^ n;
+  //dummy
+      A1 = 1;
+      A2 = 1;
+      if Ra > 10 ^ 5 then
+        h = k / L * Nu;
+      else
+        h = 5;
+      end if;
+    end if;
+    annotation(
+      Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {255, 255, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-62, 80}, {98, -80}}), Rectangle(fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward, extent = {{-90, 80}, {-60, -80}}), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name"), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0}), Text(origin = {-23, 90}, lineThickness = 1.5, extent = {{-41, 20}, {103, -20}}, textString = "NaturalConvection")}),
+      Documentation(info = "<html>
+  <p>
+  This is a model of linear heat convection, e.g., the heat transfer between a plate and the surrounding air; see also:
+  <a href=\"modelica://Modelica.Thermal.HeatTransfer.Components.ConvectiveResistor\">ConvectiveResistor</a>.
+  It may be used for complicated solid geometries and fluid flow over the solid by determining the
+  convective thermal conductance Gc by measurements. The basic constitutive equation for convection is
+  </p>
+  <pre>
+  Q_flow = Gc*(solid.T - fluid.T);
+  Q_flow: Heat flow rate from connector 'solid' (e.g., a plate)
+    to connector 'fluid' (e.g., the surrounding air)
+  </pre>
+  <p>
+  Gc = G.signal[1] is an input signal to the component, since Gc is
+  nearly never constant in practice. For example, Gc may be a function
+  of the speed of a cooling fan. For simple situations,
+  Gc may be <i>calculated</i> according to
+  </p>
+  <pre>
+  Gc = A*h
+  A: Convection area (e.g., perimeter*length of a box)
+  h: Heat transfer coefficient
+  </pre>
+  <p>
+  where the heat transfer coefficient h is calculated
+  from properties of the fluid flowing over the solid. Examples:
+  </p>
+  <p>
+  <b>Machines cooled by air</b> (empirical, very rough approximation according
+  to R. Fischer: Elektrische Maschinen, 10th edition, Hanser-Verlag 1999,
+  p. 378):
+  </p>
+  <pre>
+  h = 7.8*v^0.78 [W/(m2.K)] (forced convection)
+    = 12         [W/(m2.K)] (free convection)
+  where
+    v: Air velocity in [m/s]
+  </pre>
+  <p><b>Laminar</b> flow with constant velocity of a fluid along a
+  <b>flat plate</b> where the heat flow rate from the plate
+  to the fluid (= solid.Q_flow) is kept constant
+  (according to J.P.Holman: Heat Transfer, 8th edition,
+  McGraw-Hill, 1997, p.270):
+  </p>
+  <pre>
+  h  = Nu*k/x;
+  Nu = 0.453*Re^(1/2)*Pr^(1/3);
+  where
+    h  : Heat transfer coefficient
+    Nu : = h*x/k       (Nusselt number)
+    Re : = v*x*rho/mue (Reynolds number)
+    Pr : = cp*mue/k    (Prandtl number)
+    v  : Absolute velocity of fluid
+    x  : distance from leading edge of flat plate
+    rho: density of fluid (material constant
+    mue: dynamic viscosity of fluid (material constant)
+    cp : specific heat capacity of fluid (material constant)
+    k  : thermal conductivity of fluid (material constant)
+  and the equation for h holds, provided
+    Re &lt; 5e5 and 0.6 &lt; Pr &lt; 50
+  </pre>
+  </html>"),
+      Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-90, 80}, {-60, -80}}, lineColor = {0, 0, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Text(extent = {{-40, 40}, {80, 20}}, lineColor = {255, 0, 0}, textString = "Q_flow"), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0})}));
+  end NaturalConvection;
+
+model EnclosedConvection "Lumped thermal element for heat convection (Q_flow = Gc*dT)"
+    Modelica.SIunits.HeatFlowRate Q_flow "Heat flow rate from solid -> fluid";
+    Modelica.SIunits.TemperatureDifference dT "= solid.T - fluid.T";
+    Modelica.SIunits.Temperature T;
+    Real Gc;
+    parameter Modelica.SIunits.Area area;
+    parameter Modelica.SIunits.Length L "length";
+    parameter Modelica.SIunits.Length H "Height";
+    Modelica.SIunits.CoefficientOfHeatTransfer h;
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_a solid annotation(
+      Placement(transformation(extent = {{-110, -10}, {-90, 10}})));
+    Modelica.Thermal.HeatTransfer.Interfaces.HeatPort_b fluid annotation(
+      Placement(transformation(extent = {{90, -10}, {110, 10}})));
+    //Nusselt Number Cal
+    replaceable package medium = Modelica.Media.Water.StandardWater;
+    medium.ThermodynamicState state;
+    constant Real g = 9.81;
+    constant Real p = 101325;
+    //Physics properties
+    Real k;
+    Real Cp;
+    Real d;
+    Real Pr;
+    Real mu "dynamic viscosity";
+    Real beta;
+    Real Gr;
+    Real Nu;
+    Real Ra "Rayleigh number";
+    Real A1;
+  equation
+    dT = solid.T - fluid.T;
+    T = (solid.T + fluid.T) / 2;
+    solid.Q_flow = Q_flow;
+    fluid.Q_flow = -Q_flow;
+    Gc = area * h;
+    Q_flow = Gc * dT;
+    state = medium.setState_pT(p, T);
+    d = medium.density(state);
+    k = medium.thermalConductivity(state);
+    Cp = medium.specificHeatCapacityCp(state);
+    mu = medium.dynamicViscosity(state);
+  //beta = medium.density_derT_p(state) * (-1 / d);
+    beta = 2.1;
+    Ra = Pr * Gr;
+    Pr = mu * Cp / k;
+    Gr = g * d ^ 2 * beta * dT * L ^ 3 / mu ^ 2;
+    A1 = Pr * Ra / (0.2 + Pr);
+    if 2 < H / L and H / L < 10 and Pr < 10 ^ 5 and 10 ^ 3 < Ra and Ra < 10 ^ 10 then
+      Nu = 0.22 * A1 ^ 0.28 * (H / L) * (-1 / 4);
+      h = k / L * Nu;
+    elseif 1 < H / L and H / L < 2 and 10 ^ (-3) < Pr and Pr < 10 ^ 5 and A1 > 10 ^ 2 then
+      Nu = 0.18 * A1 ^ 0.29;
+      h = k / L * Nu;
+    else
+      Nu = 1;
+      h = 1000;
+    end if;
+    annotation(
+      Icon(coordinateSystem(initialScale = 0.1), graphics = {Rectangle(lineColor = {255, 255, 255}, fillColor = {255, 255, 255}, fillPattern = FillPattern.Solid, extent = {{-62, 80}, {98, -80}}), Rectangle(fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward, extent = {{-90, 80}, {-60, -80}}), Text(lineColor = {0, 0, 255}, extent = {{-150, -90}, {150, -130}}, textString = "%name"), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0}), Text(origin = {-23, 90}, lineThickness = 1.5, extent = {{-41, 20}, {103, -20}}, textString = "NaturalConvection")}),
+      Documentation(info = "<html>
+  <p>
+  This is a model of linear heat convection, e.g., the heat transfer between a plate and the surrounding air; see also:
+  <a href=\"modelica://Modelica.Thermal.HeatTransfer.Components.ConvectiveResistor\">ConvectiveResistor</a>.
+  It may be used for complicated solid geometries and fluid flow over the solid by determining the
+  convective thermal conductance Gc by measurements. The basic constitutive equation for convection is
+  </p>
+  <pre>
+  Q_flow = Gc*(solid.T - fluid.T);
+  Q_flow: Heat flow rate from connector 'solid' (e.g., a plate)
+    to connector 'fluid' (e.g., the surrounding air)
+  </pre>
+  <p>
+  Gc = G.signal[1] is an input signal to the component, since Gc is
+  nearly never constant in practice. For example, Gc may be a function
+  of the speed of a cooling fan. For simple situations,
+  Gc may be <i>calculated</i> according to
+  </p>
+  <pre>
+  Gc = A*h
+  A: Convection area (e.g., perimeter*length of a box)
+  h: Heat transfer coefficient
+  </pre>
+  <p>
+  where the heat transfer coefficient h is calculated
+  from properties of the fluid flowing over the solid. Examples:
+  </p>
+  <p>
+  <b>Machines cooled by air</b> (empirical, very rough approximation according
+  to R. Fischer: Elektrische Maschinen, 10th edition, Hanser-Verlag 1999,
+  p. 378):
+  </p>
+  <pre>
+  h = 7.8*v^0.78 [W/(m2.K)] (forced convection)
+    = 12         [W/(m2.K)] (free convection)
+  where
+    v: Air velocity in [m/s]
+  </pre>
+  <p><b>Laminar</b> flow with constant velocity of a fluid along a
+  <b>flat plate</b> where the heat flow rate from the plate
+  to the fluid (= solid.Q_flow) is kept constant
+  (according to J.P.Holman: Heat Transfer, 8th edition,
+  McGraw-Hill, 1997, p.270):
+  </p>
+  <pre>
+  h  = Nu*k/x;
+  Nu = 0.453*Re^(1/2)*Pr^(1/3);
+  where
+    h  : Heat transfer coefficient
+    Nu : = h*x/k       (Nusselt number)
+    Re : = v*x*rho/mue (Reynolds number)
+    Pr : = cp*mue/k    (Prandtl number)
+    v  : Absolute velocity of fluid
+    x  : distance from leading edge of flat plate
+    rho: density of fluid (material constant
+    mue: dynamic viscosity of fluid (material constant)
+    cp : specific heat capacity of fluid (material constant)
+    k  : thermal conductivity of fluid (material constant)
+  and the equation for h holds, provided
+    Re &lt; 5e5 and 0.6 &lt; Pr &lt; 50
+  </pre>
+  </html>"),
+      Diagram(coordinateSystem(preserveAspectRatio = true, extent = {{-100, -100}, {100, 100}}), graphics = {Rectangle(extent = {{-90, 80}, {-60, -80}}, lineColor = {0, 0, 0}, fillColor = {192, 192, 192}, fillPattern = FillPattern.Backward), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Line(points = {{100, 0}, {100, 0}}, color = {0, 127, 255}), Text(extent = {{-40, 40}, {80, 20}}, lineColor = {255, 0, 0}, textString = "Q_flow"), Line(points = {{-60, 20}, {76, 20}}, color = {191, 0, 0}), Line(points = {{-60, -20}, {76, -20}}, color = {191, 0, 0}), Line(points = {{-34, 80}, {-34, -80}}, color = {0, 127, 255}), Line(points = {{6, 80}, {6, -80}}, color = {0, 127, 255}), Line(points = {{40, 80}, {40, -80}}, color = {0, 127, 255}), Line(points = {{76, 80}, {76, -80}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-44, -60}}, color = {0, 127, 255}), Line(points = {{-34, -80}, {-24, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {-4, -60}}, color = {0, 127, 255}), Line(points = {{6, -80}, {16, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {30, -60}}, color = {0, 127, 255}), Line(points = {{40, -80}, {50, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {66, -60}}, color = {0, 127, 255}), Line(points = {{76, -80}, {86, -60}}, color = {0, 127, 255}), Line(points = {{56, -30}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, -10}, {76, -20}}, color = {191, 0, 0}), Line(points = {{56, 10}, {76, 20}}, color = {191, 0, 0}), Line(points = {{56, 30}, {76, 20}}, color = {191, 0, 0})}));
+  end EnclosedConvection;
+  
+  type ConvectionType = enumeration(vertical_planes_cylinder, LowerSurface_of_heatedPlates);
   end CoffeeThermal;
+
+
+
+
 
   package Media
     import Cv = Modelica.SIunits.Conversions;
